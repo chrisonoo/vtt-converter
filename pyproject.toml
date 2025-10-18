@@ -16,6 +16,9 @@ dependencies = [
     "python-dotenv==1.1.1",
 ]
 
+[project.scripts]
+vtt = "src:main"
+
 [project.optional-dependencies]
 dev = [
     "ruff==0.14.1",
@@ -35,6 +38,10 @@ lint.select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
 
 [tool.mypy]
 python_version = "3.12"
