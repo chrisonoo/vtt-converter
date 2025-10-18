@@ -9,7 +9,6 @@ from pathlib import Path
 from src.config import load_logging_config
 from src.database import (
     add_processed_file,
-    add_processed_text,
     create_tables,
     get_pending_files,
     update_file_status,
@@ -70,7 +69,6 @@ def main() -> None:
             cleaned_text = parse_vtt_file(file_path)
             full_content = "\n".join(cleaned_text)
             add_processed_file(file_id, full_content)
-            add_processed_text(file_id, cleaned_text)
             update_file_status(file_id, 1)
             if logging_enabled:
                 print(full_content)

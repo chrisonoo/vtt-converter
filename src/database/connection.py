@@ -64,14 +64,6 @@ class DatabaseConnection:
                 )
             """)
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS processed_text (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    file_id INTEGER NOT NULL,
-                    text TEXT NOT NULL,
-                    FOREIGN KEY (file_id) REFERENCES files (id)
-                )
-            """)
 
             conn.commit()
 
