@@ -123,3 +123,5 @@ __pycache__/
 .pnp/
 
 # Project specific files
+!.env.example
+voice_note_example/

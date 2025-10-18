@@ -1,3 +1,88 @@
 ---
 alwaysApply: true
 ---
+## Stack technologiczny
+- Sprawdź `pyproject.toml`
+- Terminal: `pwsh.exe`
+
+## Kluczowe elementy projektu
+
+* Wyraźny podział na warstwy i moduły: główny `main.py` jako punkt wejścia, osobne moduły do wyspecjalizowanych zadań i wrapperów API i bazy danych.
+* Przetwarzanie ciężkich zadań w wątkach asynchronicznych. Ilość jednoczesnych wątków definiowana w pliku konfiguracyjnym.
+* Jawne zależności i wymagania, obecność `.env.example`, `requirements.txt`.
+* Trwały stan w SQLite zamiast plików tymczasowych rozrzuconych po dysku.
+* Konfiguracja jako obiekt: użyj małej klasy konfigu do wstrzykiwania w moduły. Zmniejsza zależność od globali i ułatwia testy.
+* Warstwa dostępu do DB: Wydziel cienki repozytorium danych z metodami typu `add_file`, `mark_loaded`, `save_transcription`. Niech reszta kodu nie zna SQL. Używaj kontekstów dla połączeń.
+* Spójne API backendu dla GUI i CLI: Utrzymaj jeden „silnik” z funkcjami asynchronicznymi. GUI tylko subskrybuje postęp. CLI wyświetla log. To ogranicza duplikację logiki. Gdy w projekcie nie ma GUI też utrzymuj taką przyszłościową architekturę, która umożliwi dodanie GUI w dowolnym momencie.
+* Logowanie i błędy: Zaimplementuj `logging` z prostą konfiguracją oraz jednolity model błędów w transkrypcji i konwersji. W GUI zamieniaj wyjątki na przyjazne komunikaty.
+* Typy i drobna higiena: Adnotacje typów Ruff + adnotacje typów + mypy w trybie lekkim. Dla tak małego projektu to niewiele pracy, a szybko zwraca się przy zmianach.
+* Testy punktowe: Kilka testów `pytest` do funkcji czysto obliczeniowych i warstwy repozytorium. OpenAI API można testować na krótkich próbkach.
+
+## Struktura modułowa
+Struktura projektu
+
+```
+project/
+  __init__.py
+  config
+    config.py
+  database
+    database.py
+  module_1/
+    __init__.py
+    module_1.py
+  module_2/
+    __init__.py
+    module_1.py
+  cli.py
+  pyproject.toml
+```
+
+## pyproject.toml
+
+```
+[build-system]
+requires = ["setuptools>=80.9", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vtt-converter"
+version = "0.1.0"
+description = "VTT Converter application"
+authors = [
+    {name = "Chris", email = "chris@onoo.no"}
+]
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    "openai==2.5.0",
+    "python-dotenv==1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.14.1",
+    "mypy==1.18.2",
+]
+
+[tool.ruff]
+line-length = 100
+
+# Zestaw reguł na start
+lint.select = ["E", "F", "I", "UP", "B", "SIM"]
+# E,F - błędy i styl PEP8
+# I - sortowanie importów
+# UP - unowocześnienia składni
+# B - bugbear, typowe wpadki
+# SIM - proste uproszczenia
+
+[tool.ruff.lint.isort]
+known-first-party = ["vtt_converter"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+```
