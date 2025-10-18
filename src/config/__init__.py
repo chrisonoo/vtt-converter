@@ -1,12 +1,15 @@
 """
-Configuration modules for VTT Converter.
+Configuration loader for VTT Converter.
 """
+from dotenv import load_dotenv
+import os
 
-from .config import Config
+def load_logging_config() -> bool:
+    """
+    Load logging configuration from .env file.
 
-# Only expose the list of supported extensions (recommended for clarity)
-SUPPORTED_EXTENSIONS = Config.SUPPORTED_EXTENSIONS
-
-__all__ = [
-    "SUPPORTED_EXTENSIONS",
-]
+    Returns:
+        True if logging is enabled, False otherwise.
+    """
+    load_dotenv()
+    return os.getenv("LOGGING", "false").lower() == "true"

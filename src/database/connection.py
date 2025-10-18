@@ -56,6 +56,15 @@ class DatabaseConnection:
             """)
 
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS processed_files (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    file_id INTEGER NOT NULL,
+                    full_content TEXT NOT NULL,
+                    FOREIGN KEY (file_id) REFERENCES files (id)
+                )
+            """)
+
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS processed_text (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     file_id INTEGER NOT NULL,

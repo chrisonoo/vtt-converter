@@ -33,7 +33,7 @@ class FileRepository:
             cursor.execute("INSERT INTO files (path) VALUES (?)", (path,))
             conn.commit()
 
-    def update_file_status(self, file_id: int, status: str) -> None:
+    def update_file_status(self, file_id: int, status: str | int) -> None:
         """Update the status of a file.
 
         Args:
@@ -118,6 +118,41 @@ _file_repo = FileRepository()
 _processed_text_repo = ProcessedTextRepository()
 
 
+class ProcessedFileRepository:
+    """Repository for processed file database operations."""
+
+    def __init__(self, db_connection: DatabaseConnection | None = None):
+        """Initialize processed file repository.
+
+        Args:
+            db_connection: Database connection manager, uses default if None
+        """
+        self.db = db_connection or DatabaseConnection()
+
+    def add_processed_file(self, file_id: int, full_content: str) -> None:
+        """Add a processed file to the database.
+
+        Args:
+            file_id: ID of the file this content belongs to
+            full_content: Full content of the processed file
+        """
+        with self.db.get_connection_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO processed_files (file_id, full_content) VALUES (?, ?)",
+                (file_id, full_content),
+            )
+            conn.commit()
+
+
+_processed_file_repo = ProcessedFileRepository()
+
+
+def add_processed_file(file_id: int, full_content: str) -> None:
+    """Add a processed file to the database (legacy function)."""
+    _processed_file_repo.add_processed_file(file_id, full_content)
+
+
 # Legacy functions for backward compatibility
 def add_file(path: str) -> None:
     """Add a file to the database (legacy function)."""
@@ -125,7 +160,7 @@ def add_file(path: str) -> None:
         _file_repo.add_file(path)
 
 
-def update_file_status(file_id: int, status: str) -> None:
+def update_file_status(file_id: int, status: str | int) -> None:
     """Update the status of a file (legacy function)."""
     _file_repo.update_file_status(file_id, status)
 

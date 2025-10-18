@@ -7,11 +7,13 @@ import sys
 from pathlib import Path
 
 from src.database import (
+    add_processed_file,
     add_processed_text,
     create_tables,
     get_pending_files,
     update_file_status,
 )
+from src.config import load_logging_config
 from src.services.file_service import FileService
 from src.services.vtt_parser import parse_vtt_file
 
@@ -50,11 +52,14 @@ def main() -> None:
     # Initialize database and services
     create_tables()
     file_service = FileService()
+    logging_enabled = load_logging_config()
 
     try:
         # Discover and add VTT files to the database
         print("Discovering VTT files...")
-        file_service.discover_vtt_files(str(args.directory))
+        found_files = file_service.discover_vtt_files(str(args.directory))
+        for file_path in found_files:
+            print(f"Found file: {file_path}")
         print("File discovery complete.")
 
         # Process pending files
@@ -63,8 +68,12 @@ def main() -> None:
         for file_id, file_path in pending_files:
             print(f"Processing {file_path}...")
             cleaned_text = parse_vtt_file(file_path)
+            full_content = "\n".join(cleaned_text)
+            add_processed_file(file_id, full_content)
             add_processed_text(file_id, cleaned_text)
-            update_file_status(file_id, "processed")
+            update_file_status(file_id, 1)
+            if logging_enabled:
+                print(full_content)
         print("File processing complete.")
 
     except KeyboardInterrupt:
