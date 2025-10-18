@@ -10,7 +10,7 @@ alwaysApply: true
 
 ## Kluczowe elementy projektu
 
-- **Modularna architektura**: Główny `main.py` jako punkt wejścia, osobne moduły do wyspecjalizowanych zadań, wrapperów API i warstwy danych.
+- **Modularna architektura**: Główny `main.py` jako punkt wejścia, folder `src/` zawierający wszystkie moduły aplikacji, osobne pakiety do wyspecjalizowanych zadań, wrapperów API i warstwy danych.
 - **Asynchroniczne przetwarzanie**: Ciężkie zadania w wątkach asynchronicznych z konfigurowalną liczbą jednoczesnych wątków.
 - **Zarządzanie zależnościami**: Jawne wymagania w `pyproject.toml`, plik `.env.example` dla zmiennych środowiskowych.
 - **Trwały stan**: SQLite zamiast plików tymczasowych - zapewnia integralność danych i możliwość wznowienia pracy.
@@ -22,26 +22,29 @@ alwaysApply: true
 - **Testy**: Testy jednostkowe dla funkcji czystych i warstwy danych. API zewnętrzne testowane na próbkach.
 
 ## Struktura modułowa
-Ogólny schemat struktury projektu (uniwersalny dla różnych aplikacji)
+Ogólny schemat struktury projektu z folderem `src/` (uniwersalny dla różnych aplikacji)
 
 ```
 project/
-  __init__.py              # Inicjalizacja pakietu
-  config/
-    __init__.py            # Opcjonalne
-    config.py              # Klasa konfiguracyjna, ładowanie .env
-  database/
-    __init__.py            # Opcjonalne
-    database.py            # Warstwa dostępu do danych, repozytoria
-  core/                    # Główne moduły biznesowe
-    __init__.py
-    module_1.py            # Pierwszy moduł funkcjonalny
-    module_2.py            # Drugi moduł funkcjonalny
-  services/                # Serwisu dla całej aplikacji
-  utils/                   # Narzędzia dla całej aplikacji
-  cli.py                   # Interfejs wiersza poleceń
-  main.py                  # Główny punkt wejścia aplikacji
-  pyproject.toml           # Konfiguracja projektu i zależności
+  src/                     # 📦 Folder zawierający cały kod aplikacji (lepsze oddzielenie od plików konfiguracyjnych)
+    __init__.py           # Inicjalizacja pakietu aplikacji
+    config/
+      __init__.py         # Opcjonalne
+      config.py           # Klasa konfiguracyjna, ładowanie .env
+    database/
+      __init__.py         # Opcjonalne
+      database.py         # Warstwa dostępu do danych, repozytoria
+    core/                 # Główne moduły biznesowe
+      __init__.py
+      module_1.py         # Pierwszy moduł funkcjonalny
+      module_2.py         # Drugi moduł funkcjonalny
+    services/             # Serwisy dla całej aplikacji
+    utils/                # Narzędzia dla całej aplikacji
+    cli.py                # Interfejs wiersza poleceń
+  main.py                 # Główny punkt wejścia aplikacji
+  pyproject.toml          # Konfiguracja projektu i zależności
+  README.md               # Dokumentacja
+  .env.example            # Przykładowe zmienne środowiskowe
 ```
 
 ## pyproject.toml
@@ -87,7 +90,7 @@ lint.select = ["E", "F", "I", "UP", "B", "SIM"]
 # SIM - proste uproszczenia
 
 [tool.ruff.lint.isort]
-known-first-party = ["your_project_name"]  # Zmień na nazwę pakietu
+known-first-party = ["src"]  # Główny pakiet aplikacji w folderze src/
 
 [tool.mypy]
 python_version = "3.12"
