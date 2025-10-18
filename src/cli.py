@@ -6,6 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from src.config import load_logging_config
 from src.database import (
     add_processed_file,
     add_processed_text,
@@ -13,7 +14,6 @@ from src.database import (
     get_pending_files,
     update_file_status,
 )
-from src.config import load_logging_config
 from src.services.file_service import FileService
 from src.services.vtt_parser import parse_vtt_file
 
