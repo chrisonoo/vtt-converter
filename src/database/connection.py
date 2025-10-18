@@ -4,17 +4,25 @@ Database connection management for VTT Converter.
 
 import sqlite3
 from contextlib import contextmanager
+from pathlib import Path
 
 
 class DatabaseConnection:
     """Manages database connections and provides context managers."""
 
-    def __init__(self, db_path: str = "vtt_converter.db"):
+    def __init__(self, db_path: str | None = None):
         """Initialize database connection manager.
 
         Args:
-            db_path: Path to the SQLite database file
+            db_path: Path to the SQLite database file. If None, uses default tmp/vtt.db
         """
+        if db_path is None:
+            # Default path: tmp/vtt.db relative to the application root
+            app_root = Path(__file__).parent.parent.parent
+            db_dir = app_root / "tmp"
+            db_dir.mkdir(parents=True, exist_ok=True)
+            db_path = str(db_dir / "vtt.db")
+
         self.db_path = db_path
 
     def get_connection(self) -> sqlite3.Connection:
