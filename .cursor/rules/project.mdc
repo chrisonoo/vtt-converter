@@ -2,43 +2,49 @@
 alwaysApply: true
 ---
 ## Stack technologiczny
-- Sprawdź `pyproject.toml`
+- Python 3.11+ (wersja definiowana w `pyproject.toml`)
+- SQLite dla trwałych danych
+- OpenAI API dla wykorzystywanych modeli AI
 - Terminal: `pwsh.exe`
+- Narzędzia deweloperskie: Ruff (linting), MyPy (type checking), Pytest (testy)
 
 ## Kluczowe elementy projektu
 
-* Wyraźny podział na warstwy i moduły: główny `main.py` jako punkt wejścia, osobne moduły do wyspecjalizowanych zadań i wrapperów API i bazy danych.
-* Przetwarzanie ciężkich zadań w wątkach asynchronicznych. Ilość jednoczesnych wątków definiowana w pliku konfiguracyjnym.
-* Jawne zależności i wymagania, obecność `.env.example`, `requirements.txt`.
-* Trwały stan w SQLite zamiast plików tymczasowych rozrzuconych po dysku.
-* Konfiguracja jako obiekt: użyj małej klasy konfigu do wstrzykiwania w moduły. Zmniejsza zależność od globali i ułatwia testy.
-* Warstwa dostępu do DB: Wydziel cienki repozytorium danych z metodami typu `add_file`, `mark_loaded`, `save_transcription`. Niech reszta kodu nie zna SQL. Używaj kontekstów dla połączeń.
-* Spójne API backendu dla GUI i CLI: Utrzymaj jeden „silnik” z funkcjami asynchronicznymi. GUI tylko subskrybuje postęp. CLI wyświetla log. To ogranicza duplikację logiki. Gdy w projekcie nie ma GUI też utrzymuj taką przyszłościową architekturę, która umożliwi dodanie GUI w dowolnym momencie.
-* Logowanie i błędy: Zaimplementuj `logging` z prostą konfiguracją oraz jednolity model błędów w transkrypcji i konwersji. W GUI zamieniaj wyjątki na przyjazne komunikaty.
-* Typy i drobna higiena: Adnotacje typów Ruff + adnotacje typów + mypy w trybie lekkim. Dla tak małego projektu to niewiele pracy, a szybko zwraca się przy zmianach.
-* Testy punktowe: Kilka testów `pytest` do funkcji czysto obliczeniowych i warstwy repozytorium. OpenAI API można testować na krótkich próbkach.
+- **Modularna architektura**: Główny `main.py` jako punkt wejścia, osobne moduły do wyspecjalizowanych zadań, wrapperów API i warstwy danych.
+- **Asynchroniczne przetwarzanie**: Ciężkie zadania w wątkach asynchronicznych z konfigurowalną liczbą jednoczesnych wątków.
+- **Zarządzanie zależnościami**: Jawne wymagania w `pyproject.toml`, plik `.env.example` dla zmiennych środowiskowych.
+- **Trwały stan**: SQLite zamiast plików tymczasowych - zapewnia integralność danych i możliwość wznowienia pracy.
+- **Konfiguracja**: Klasa konfiguracyjna wstrzykiwana do modułów - unika globali i ułatwia testowanie.
+- **Warstwa danych**: Cienka warstwa repozytorium z metodami biznesowymi (np. `add_file`, `save_result`). Kod biznesowy nie zna SQL, używane konteksty dla połączeń DB.
+- **Unifikowane API**: Jeden asynchroniczny "silnik" dla CLI i GUI. GUI subskrybuje postęp, CLI wyświetla logi - minimalizuje duplikację kodu.
+- **Logowanie i obsługa błędów**: Jednolity system `logging` i model błędów. W interfejsach użytkownika wyjątki tłumaczone na przyjazne komunikaty.
+- **Jakość kodu**: Adnotacje typów, Ruff do lintingu, MyPy do sprawdzania typów. Dla małych projektów to minimalny narzut z szybkim zwrotem.
+- **Testy**: Testy jednostkowe dla funkcji czystych i warstwy danych. API zewnętrzne testowane na próbkach.
 
 ## Struktura modułowa
-Struktura projektu
+Ogólny schemat struktury projektu (uniwersalny dla różnych aplikacji)
 
 ```
 project/
-  __init__.py
-  config
-    config.py
-  database
-    database.py
-  module_1/
+  __init__.py              # Inicjalizacja pakietu
+  config/
+    __init__.py            # Opcjonalne
+    config.py              # Klasa konfiguracyjna, ładowanie .env
+  database/
+    __init__.py            # Opcjonalne
+    database.py            # Warstwa dostępu do danych, repozytoria
+  core/                    # Główne moduły biznesowe
     __init__.py
-    module_1.py
-  module_2/
-    __init__.py
-    module_1.py
-  cli.py
-  pyproject.toml
+    module_1.py            # Pierwszy moduł funkcjonalny
+    module_2.py            # Drugi moduł funkcjonalny
+  cli.py                   # Interfejs wiersza poleceń
+  main.py                  # Główny punkt wejścia aplikacji
+  pyproject.toml           # Konfiguracja projektu i zależności
 ```
 
 ## pyproject.toml
+
+Podstawowy szablon konfiguracyjny (dostosuj name, description, authors i dependencies do projektu)
 
 ```
 [build-system]
@@ -46,23 +52,25 @@ requires = ["setuptools>=80.9", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vtt-converter"
+name = "your-project-name"           # Zmień na nazwę projektu
 version = "0.1.0"
-description = "VTT Converter application"
+description = "Brief description of your application"  # Krótkie opis projektu
 authors = [
-    {name = "Chris", email = "chris@onoo.no"}
+    {name = "Your Name", email = "your.email@example.com"}  # Dostosuj dane autora
 ]
 requires-python = ">=3.11,<3.13"
 
 dependencies = [
-    "openai==2.5.0",
-    "python-dotenv==1.1.1",
+    # Dodaj główne zależności projektu
+    # "requests>=2.25.0",
+    # "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "ruff==0.14.1",
-    "mypy==1.18.2",
+    "ruff>=0.14.0",
+    "mypy>=1.18.0",
+    "pytest>=7.0.0",
 ]
 
 [tool.ruff]
@@ -77,7 +85,7 @@ lint.select = ["E", "F", "I", "UP", "B", "SIM"]
 # SIM - proste uproszczenia
 
 [tool.ruff.lint.isort]
-known-first-party = ["vtt_converter"]
+known-first-party = ["your_project_name"]  # Zmień na nazwę pakietu
 
 [tool.mypy]
 python_version = "3.12"
