@@ -4,17 +4,19 @@ File utility functions for VTT Converter.
 
 from pathlib import Path
 
+from src.config import SUPPORTED_EXTENSIONS
 
-def find_files_by_extension(directory: Path, extension: str) -> list[Path]:
+
+def find_files_by_extensions(directory: Path, extensions: list[str]) -> list[Path]:
     """
-    Recursively find all files with the specified extension in the given directory.
+    Recursively find all files with the specified extensions in the given directory.
 
     Args:
         directory: The directory to search in
-        extension: File extension to search for (without the dot, e.g., 'vtt')
+        extensions: List of file extensions to search for (without the dot, e.g., ['vtt', 'srt'])
 
     Returns:
-        List of Path objects pointing to files with the specified extension
+        List of Path objects pointing to files with the specified extensions
 
     Raises:
         ValueError: If directory does not exist or is not a directory
@@ -25,8 +27,11 @@ def find_files_by_extension(directory: Path, extension: str) -> list[Path]:
     if not directory.is_dir():
         raise ValueError(f"'{directory}' is not a directory.")
 
-    pattern = f"*.{extension}"
-    files = list(directory.rglob(pattern))
+    files: list[Path] = []
+    for extension in extensions:
+        pattern = f"*.{extension}"
+        files.extend(directory.rglob(pattern))
+
     return sorted(files)
 
 
@@ -35,6 +40,7 @@ def find_vtt_files(directory: Path) -> list[Path]:
     Recursively find all VTT files in the given directory.
 
     This is a convenience function for finding VTT files specifically.
+    Uses the configured supported extensions.
 
     Args:
         directory: The directory to search in
@@ -45,4 +51,4 @@ def find_vtt_files(directory: Path) -> list[Path]:
     Raises:
         ValueError: If directory does not exist or is not a directory
     """
-    return find_files_by_extension(directory, "vtt")
+    return find_files_by_extensions(directory, SUPPORTED_EXTENSIONS)

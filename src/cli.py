@@ -17,7 +17,7 @@ def create_parser() -> argparse.ArgumentParser:
         Configured ArgumentParser instance
     """
     parser = argparse.ArgumentParser(
-        description="VTT Converter - Find and process VTT subtitle files",
+        description="VTT Converter - Find and process subtitle files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -26,7 +26,7 @@ Examples:
         """,
     )
 
-    parser.add_argument("directory", type=Path, help="Directory to search for VTT files")
+    parser.add_argument("directory", type=Path, help="Directory to search for subtitle files")
 
     return parser
 
@@ -45,7 +45,7 @@ def main() -> None:
 
     try:
         # Execute the main operation
-        file_service.list_vtt_files(args.directory)
+        file_service.list_subtitle_files(args.directory)
 
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")

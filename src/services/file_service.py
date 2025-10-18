@@ -14,17 +14,18 @@ class FileService:
     """
     Service layer for file operations.
 
-    This service acts as an abstraction layer between the CLI/GUI and the core file processing logic.
-    It handles high-level operations, error management, and coordinates multiple core components.
+    This service acts as an abstraction layer between the CLI/GUI and the core file
+    processing logic. It handles high-level operations, error management, and coordinates multiple
+    core components.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the file service with required components."""
         self.processor = FileProcessor()
 
-    def list_vtt_files(self, directory: Path) -> None:
+    def list_subtitle_files(self, directory: Path) -> None:
         """
-        Find and display all VTT files in the given directory and its subdirectories.
+        Find and display all subtitle files in the given directory and its subdirectories.
 
         This is a high-level service method that coordinates the entire file listing operation.
 
@@ -40,10 +41,10 @@ class FileService:
             print(header)
 
             # Process directory and find files
-            vtt_files = self.processor.process_directory(directory)
+            subtitle_files = self.processor.process_directory(directory)
 
             # Format and display results
-            result = self.processor.format_file_list(vtt_files, directory)
+            result = self.processor.format_file_list(subtitle_files, directory)
             print(result)
 
         except ValueError as e:

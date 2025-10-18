@@ -12,19 +12,21 @@ class FileProcessor:
     Core processor for VTT file operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the file processor."""
         pass
 
     def process_directory(self, directory: Path) -> list[Path]:
         """
-        Process a directory to find VTT files.
+        Process a directory to find subtitle files.
+
+        Searches for all supported subtitle file extensions as configured.
 
         Args:
             directory: The directory to process
 
         Returns:
-            List of found VTT files
+            List of found subtitle files
 
         Raises:
             ValueError: If directory validation fails
@@ -43,9 +45,9 @@ class FileProcessor:
             Formatted string representation of the file list
         """
         if not files:
-            return "No VTT files found."
+            return "No subtitle files found."
 
-        lines = [f"Found {len(files)} VTT file(s):", ""]
+        lines = [f"Found {len(files)} subtitle file(s):", ""]
 
         for i, vtt_file in enumerate(files, 1):
             try:
@@ -68,4 +70,4 @@ class FileProcessor:
         Returns:
             Formatted header string
         """
-        return f"Searching for VTT files in: {directory.absolute()}\n{'-' * 60}"
+        return f"Searching for subtitle files in: {directory.absolute()}\n{'-' * 60}"
