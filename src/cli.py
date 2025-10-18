@@ -64,8 +64,8 @@ def main() -> None:
         # Process pending files
         print("Processing pending files...")
         pending_files = get_pending_files()
-        for file_id, file_path in pending_files:
-            print(f"Processing {file_path}...")
+        for file_id, file_path, filename in pending_files:
+            print(f"Processing {filename}...")
             cleaned_text = parse_vtt_file(file_path)
             full_content = "\n".join(cleaned_text)
             add_processed_file(file_id, full_content)

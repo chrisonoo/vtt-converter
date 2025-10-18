@@ -4,6 +4,7 @@ Repository layer for database operations in VTT Converter.
 
 import contextlib
 import sqlite3
+from pathlib import Path
 
 from .connection import DatabaseConnection
 
@@ -28,9 +29,10 @@ class FileRepository:
         Raises:
             sqlite3.IntegrityError: If file already exists
         """
+        filename = Path(path).name
         with self.db.get_connection_context() as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO files (path) VALUES (?)", (path,))
+            cursor.execute("INSERT INTO files (path, filename) VALUES (?, ?)", (path, filename))
             conn.commit()
 
     def update_file_status(self, file_id: int, status: str | int) -> None:
@@ -45,32 +47,32 @@ class FileRepository:
             cursor.execute("UPDATE files SET status = ? WHERE id = ?", (status, file_id))
             conn.commit()
 
-    def get_pending_files(self) -> list[tuple[int, str]]:
-        """Get all files with 'pending' status.
+    def get_pending_files(self) -> list[tuple[int, str, str]]:
+        """Get all files with pending status (status = 0).
 
         Returns:
-            List of tuples containing (file_id, file_path)
+            List of tuples containing (file_id, file_path, filename)
         """
         with self.db.get_connection_context() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, path FROM files WHERE status = 'pending'")
+            cursor.execute("SELECT id, path, filename FROM files WHERE status = 0")
             files = cursor.fetchall()
-            return [(row["id"], row["path"]) for row in files]
+            return [(row["id"], row["path"], row["filename"]) for row in files]
 
-    def get_file_by_path(self, path: str) -> tuple[int, str, str] | None:
+    def get_file_by_path(self, path: str) -> tuple[int, str, str, str] | None:
         """Get file information by path.
 
         Args:
             path: Path to the file
 
         Returns:
-            Tuple of (id, path, status) or None if not found
+            Tuple of (id, path, filename, status) or None if not found
         """
         with self.db.get_connection_context() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, path, status FROM files WHERE path = ?", (path,))
+            cursor.execute("SELECT id, path, filename, status FROM files WHERE path = ?", (path,))
             row = cursor.fetchone()
-            return (row["id"], row["path"], row["status"]) if row else None
+            return (row["id"], row["path"], row["filename"], row["status"]) if row else None
 
 
 # Global instances for backward compatibility
@@ -124,6 +126,6 @@ def update_file_status(file_id: int, status: str | int) -> None:
     _file_repo.update_file_status(file_id, status)
 
 
-def get_pending_files() -> list[tuple[int, str]]:
+def get_pending_files() -> list[tuple[int, str, str]]:
     """Get all files with 'pending' status (legacy function)."""
     return _file_repo.get_pending_files()

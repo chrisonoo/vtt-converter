@@ -3,7 +3,7 @@ Database connection management for VTT Converter.
 """
 
 import sqlite3
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
 
 
@@ -47,13 +47,51 @@ class DatabaseConnection:
         with self.get_connection_context() as conn:
             cursor = conn.cursor()
 
+            # Create files table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS files (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     path TEXT NOT NULL UNIQUE,
-                    status TEXT NOT NULL DEFAULT 'pending'
+                    filename TEXT NOT NULL,
+                    status INTEGER NOT NULL DEFAULT 0
                 )
             """)
+
+            # Add filename column to existing tables if it doesn't exist
+            with suppress(sqlite3.OperationalError):
+                cursor.execute("ALTER TABLE files ADD COLUMN filename TEXT")
+
+            # Update existing records to populate filename column
+            cursor.execute("""
+                UPDATE files
+                SET filename = CASE
+                    WHEN filename IS NULL THEN
+                        substr(path, instr(path, '\\') + 1)
+                    ELSE filename
+                END
+                WHERE filename IS NULL OR filename = ''
+            """)
+
+            # Migrate status column from TEXT to INTEGER (0=pending, 1=processed)
+            # Check if status column is still TEXT type (old schema)
+            cursor.execute("PRAGMA table_info(files)")
+            columns = cursor.fetchall()
+            status_column = next((col for col in columns if col[1] == "status"), None)
+
+            if status_column and status_column[2] == "TEXT":
+                # Migrate status column to INTEGER
+                cursor.execute("ALTER TABLE files ADD COLUMN status_new INTEGER DEFAULT 0")
+                cursor.execute("""
+                    UPDATE files
+                    SET status_new = CASE
+                        WHEN status = 'pending' THEN 0
+                        WHEN status = '1' THEN 1
+                        WHEN CAST(status AS INTEGER) = 1 THEN 1
+                        ELSE 0
+                    END
+                """)
+                cursor.execute("ALTER TABLE files DROP COLUMN status")
+                cursor.execute("ALTER TABLE files RENAME COLUMN status_new TO status")
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS processed_files (
@@ -63,7 +101,6 @@ class DatabaseConnection:
                     FOREIGN KEY (file_id) REFERENCES files (id)
                 )
             """)
-
 
             conn.commit()
 
