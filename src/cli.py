@@ -6,10 +6,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from src.database.database import (
+from src.database import (
+    add_processed_text,
     create_tables,
     get_pending_files,
-    add_processed_text,
     update_file_status,
 )
 from src.services.file_service import FileService
@@ -64,7 +64,7 @@ def main() -> None:
             print(f"Processing {file_path}...")
             cleaned_text = parse_vtt_file(file_path)
             add_processed_text(file_id, cleaned_text)
-            update_file_status(file_id, 'processed')
+            update_file_status(file_id, "processed")
         print("File processing complete.")
 
     except KeyboardInterrupt:

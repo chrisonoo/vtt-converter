@@ -1,30 +1,30 @@
 import re
-from typing import List
 
-def clean_vtt_content(content: str) -> List[str]:
+
+def clean_vtt_content(content: str) -> list[str]:
     """
     Cleans the VTT content by removing headers, timestamps, and tags from text lines,
     and returns a list of unique, cleaned text lines.
     """
     lines = content.splitlines()
-    cleaned_lines = []
-    unique_lines = set()
+    cleaned_lines: list[str] = []
+    unique_lines: set[str] = set()
 
     # Skip header (until the first blank line)
     try:
-        header_end_index = lines.index('')
-        lines = lines[header_end_index + 1:]
+        header_end_index = lines.index("")
+        lines = lines[header_end_index + 1 :]
     except ValueError:
         # No blank line found, assume no header or content
         return []
 
     for line in lines:
         # Skip empty lines and timestamps
-        if not line.strip() or '-->' in line:
+        if not line.strip() or "-->" in line:
             continue
 
         # Clean the line by removing all tags
-        cleaned_line = re.sub(r'<[^>]+>', '', line).strip()
+        cleaned_line = re.sub(r"<[^>]+>", "", line).strip()
 
         if cleaned_line and cleaned_line not in unique_lines:
             unique_lines.add(cleaned_line)
@@ -32,15 +32,17 @@ def clean_vtt_content(content: str) -> List[str]:
 
     return cleaned_lines
 
-def parse_vtt_file(file_path: str) -> List[str]:
+
+def parse_vtt_file(file_path: str) -> list[str]:
     """
     Parses a VTT file, cleans its content, and returns unique text lines.
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
     return clean_vtt_content(content)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Example usage with the provided VTT snippet
     vtt_snippet = """WEBVTT
 Kind: captions
