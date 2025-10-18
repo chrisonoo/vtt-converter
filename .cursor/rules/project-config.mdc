@@ -37,6 +37,8 @@ project/
     __init__.py
     module_1.py            # Pierwszy moduł funkcjonalny
     module_2.py            # Drugi moduł funkcjonalny
+  services/                # Serwisu dla całej aplikacji
+  utils/                   # Narzędzia dla całej aplikacji
   cli.py                   # Interfejs wiersza poleceń
   main.py                  # Główny punkt wejścia aplikacji
   pyproject.toml           # Konfiguracja projektu i zależności
