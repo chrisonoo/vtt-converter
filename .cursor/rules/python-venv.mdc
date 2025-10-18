@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+globs: *.py
+alwaysApply: false
 ---
 # Zasada ogólna dla projektu Python z .venv
 

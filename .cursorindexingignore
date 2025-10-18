@@ -2,3 +2,5 @@
 .cursorignore
 .cursorindexingignore
 .gitignore
+README.md
+.cursor/
