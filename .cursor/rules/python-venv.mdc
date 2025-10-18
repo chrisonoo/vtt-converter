@@ -15,34 +15,28 @@ Wykrywanie środowiska
 - Jeśli folder `.venv` istnieje, agent korzysta wyłącznie z niego.
 - Jeśli folder `.venv` nie istnieje, agent informuje użytkownika o konieczności jego utworzenia.
 
-Tworzenie środowiska (tylko dla użytkownika)
+Jeśli środowisko nie zostanie wykryte `.venv`. 
+- **Tworzenie środowiska i instalacja zależności TYLKO!!! przez użytkownika**
 - Użytkownik tworzy środowisko poleceniem: `py -3.12 -m venv .venv --upgrade-deps`
 - Wersję Python (3.12) należy odczytać z pliku `pyproject.toml` z pola `requires-python`
 - Agent nigdy nie tworzy środowiska samodzielnie - tylko informuje o tej potrzebie użytkownika.
-
-Instalacja zależności (tylko dla użytkownika)
 - Po utworzeniu środowiska użytkownik instaluje wszystkie zależności komendą: `pip install -e .[dev]`
 - Agent nigdy nie instaluje pakietów samodzielnie - tylko informuje o tej potrzebie użytkownika.
 
 Aktywacja środowiska przez agenta
-- Agent zawsze aktywuje środowisko `.venv` właściwą metodą dla aktualnego systemu operacyjnego:
-  - Agen sprawdza terminal za pomocą komendy `echo %PSModulePath% | findstr /C:"PowerShell" >nul && echo cmd || echo PowerShell` i odpowiednio aktywuje środowisko.
-  - Windows (PowerShell): `.\.venv\Scripts\activate`
-  - Windows (cmd): `.\.venv\Scripts\activate.bat`
-  - Linux/macOS: `source .venv/bin/activate`
+- Agent zawsze aktywuje środowisko `.venv` za pomocą `.\.venv\Scripts\activate`.
 - Jeśli operacja wykonywana jest w nowej sesji, w nieinteraktywnym terminalu, w zadaniu edytora lub debugerze, agent zapewnia aktywację w tej samej sesji.
-
-Operacje agenta w środowisku
-- Agent nigdy nie wykonuje operacji poza aktywnym środowiskiem `.venv`.
-- Wszystkie komendy terminalowe agenta zawierają aktywację środowiska w tym samym wywołaniu.
-- Przykładowy wzór komendy agenta: `cd "ścieżka"; .\.venv\Scripts\activate; python script.py`
-- Agent nigdy nie dzieli aktywacji środowiska na osobne wywołania terminalowe.
 
 Weryfikacja poprawności środowiska przez agenta
 - Przed wykonaniem merytorycznych działań agent sprawdza, że interpreter pochodzi z `.venv` poleceniem:
   - `python -c "import sys; print(sys.executable)"`
 - Jeśli wynik nie wskazuje na ścieżkę wewnątrz `.venv`, agent aktywuje właściwe środowisko i powtarza weryfikację.
 - Do czasu pozytywnej weryfikacji agent nie kontynuuje merytorycznych działań.
+
+Operacje agenta w środowisku
+- Agent nigdy nie wykonuje operacji poza aktywnym środowiskiem `.venv`.
+- Wszystkie komendy terminalowe agenta zawierają aktywację środowiska w tym samym wywołaniu.
+- Agent nigdy nie dzieli aktywacji środowiska na osobne wywołania terminalowe.
 
 Zakazy dla agenta
 - Agent nigdy nie instaluje pakietów ani nie aktualizuje zależności.
