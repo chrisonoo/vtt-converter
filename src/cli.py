@@ -6,17 +6,17 @@ import argparse
 import sys
 from pathlib import Path
 
-from src.config import load_logging_config
+from src.config import config
 from src.database import (
     add_processed_file,
     create_tables,
     get_pending_files,
-    update_file_status,
     update_ai_content,
+    update_file_status,
 )
 from src.services.file_service import FileService
-from src.services.vtt_parser import parse_vtt_file
 from src.services.openai_client import OpenAIClient
+from src.services.vtt_parser import parse_vtt_file
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -53,8 +53,7 @@ def main() -> None:
     # Initialize database and services
     create_tables()
     file_service = FileService()
-    openai_client = OpenAIClient() if Config.OPENAI_API_KEY else None
-    logging_enabled = load_logging_config()
+    openai_client = OpenAIClient() if config.OPENAI_API_KEY else None
 
     try:
         # Discover and add VTT files to the database
@@ -83,7 +82,7 @@ def main() -> None:
                 print(f"Summary saved to {md_path}")
 
             update_file_status(file_id, 1)
-            if logging_enabled:
+            if config.LOGGING:
                 print(full_content)
         print("File processing complete.")
 

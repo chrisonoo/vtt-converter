@@ -16,3 +16,4 @@ class Config:
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4-mini")
     OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", 0.7))
+    LOGGING: bool = os.getenv("LOGGING", "false").lower() in ("true", "1", "t")
