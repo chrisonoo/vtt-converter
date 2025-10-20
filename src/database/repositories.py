@@ -128,3 +128,14 @@ def update_file_status(file_id: int, status: str | int) -> None:
 def get_pending_files() -> list[tuple[int, str, str]]:
     """Get all files with 'pending' status (legacy function)."""
     return _file_repo.get_pending_files()
+
+
+def update_ai_content(file_id: int, ai_content: str) -> None:
+    """Update the AI content of a processed file."""
+    try:
+        with _file_repo.db.get_connection_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE files SET ai_content = ? WHERE id = ?", (ai_content, file_id))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")

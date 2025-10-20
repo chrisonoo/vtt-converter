@@ -12,9 +12,11 @@ from src.database import (
     create_tables,
     get_pending_files,
     update_file_status,
+    update_ai_content,
 )
 from src.services.file_service import FileService
 from src.services.vtt_parser import parse_vtt_file
+from src.services.openai_client import OpenAIClient
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -51,6 +53,7 @@ def main() -> None:
     # Initialize database and services
     create_tables()
     file_service = FileService()
+    openai_client = OpenAIClient() if Config.OPENAI_API_KEY else None
     logging_enabled = load_logging_config()
 
     try:
@@ -69,6 +72,16 @@ def main() -> None:
             cleaned_text = parse_vtt_file(file_path)
             full_content = "\n".join(cleaned_text)
             add_processed_file(file_id, full_content)
+
+            if openai_client:
+                print("Generating summary with OpenAI...")
+                ai_content = openai_client.get_summary(full_content)
+                update_ai_content(file_id, ai_content)
+                md_path = Path(file_path).with_suffix(".md")
+                with open(md_path, "w", encoding="utf-8") as md_file:
+                    md_file.write(ai_content)
+                print(f"Summary saved to {md_path}")
+
             update_file_status(file_id, 1)
             if logging_enabled:
                 print(full_content)

@@ -98,6 +98,10 @@ class DatabaseConnection:
             with suppress(sqlite3.OperationalError):
                 cursor.execute("ALTER TABLE files ADD COLUMN full_content TEXT")
 
+            # Add ai_content column to existing tables if it doesn't exist
+            with suppress(sqlite3.OperationalError):
+                cursor.execute("ALTER TABLE files ADD COLUMN ai_content TEXT")
+
             # Migrate processed_files data to files table and drop the old table
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='processed_files'")
             if cursor.fetchone():
