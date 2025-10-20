@@ -8,6 +8,7 @@ from .repositories import (
     add_file,
     add_processed_file,
     get_pending_files,
+    get_processed_files,
     update_file_status,
 )
 
@@ -23,4 +24,5 @@ __all__ = [
     "update_file_status",
     "add_processed_file",
     "get_pending_files",
+    "get_processed_files",
 ]

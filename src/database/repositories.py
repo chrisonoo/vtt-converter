@@ -59,6 +59,30 @@ class FileRepository:
             files = cursor.fetchall()
             return [(row["id"], row["path"], row["filename"]) for row in files]
 
+    def update_file_content(self, file_id: int, full_content: str) -> None:
+        """Update the full content of a processed file.
+
+        Args:
+            file_id: ID of the file to update
+            full_content: Full content to store
+        """
+        with self.db.get_connection_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE files SET full_content = ?, status = 1 WHERE id = ?", (full_content, file_id))
+            conn.commit()
+
+    def get_processed_files(self) -> list[tuple[int, str, str, str]]:
+        """Get all processed files with their content.
+
+        Returns:
+            List of tuples containing (file_id, path, filename, full_content)
+        """
+        with self.db.get_connection_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, path, filename, full_content FROM files WHERE status = 1 AND full_content IS NOT NULL")
+            files = cursor.fetchall()
+            return [(row["id"], row["path"], row["filename"], row["full_content"]) for row in files]
+
     def get_file_by_path(self, path: str) -> tuple[int, str, str, str] | None:
         """Get file information by path.
 
@@ -79,39 +103,14 @@ class FileRepository:
 _file_repo = FileRepository()
 
 
-class ProcessedFileRepository:
-    """Repository for processed file database operations."""
-
-    def __init__(self, db_connection: DatabaseConnection | None = None):
-        """Initialize processed file repository.
-
-        Args:
-            db_connection: Database connection manager, uses default if None
-        """
-        self.db = db_connection or DatabaseConnection()
-
-    def add_processed_file(self, file_id: int, full_content: str) -> None:
-        """Add a processed file to the database.
-
-        Args:
-            file_id: ID of the file this content belongs to
-            full_content: Full content of the processed file
-        """
-        with self.db.get_connection_context() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO processed_files (file_id, full_content) VALUES (?, ?)",
-                (file_id, full_content),
-            )
-            conn.commit()
-
-
-_processed_file_repo = ProcessedFileRepository()
-
-
 def add_processed_file(file_id: int, full_content: str) -> None:
     """Add a processed file to the database (legacy function)."""
-    _processed_file_repo.add_processed_file(file_id, full_content)
+    _file_repo.update_file_content(file_id, full_content)
+
+
+def get_processed_files() -> list[tuple[int, str, str, str]]:
+    """Get all processed files with their content (legacy function)."""
+    return _file_repo.get_processed_files()
 
 
 # Legacy functions for backward compatibility

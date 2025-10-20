@@ -53,7 +53,8 @@ class DatabaseConnection:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     path TEXT NOT NULL UNIQUE,
                     filename TEXT NOT NULL,
-                    status INTEGER NOT NULL DEFAULT 0
+                    status INTEGER NOT NULL DEFAULT 0,
+                    full_content TEXT
                 )
             """)
 
@@ -93,14 +94,25 @@ class DatabaseConnection:
                 cursor.execute("ALTER TABLE files DROP COLUMN status")
                 cursor.execute("ALTER TABLE files RENAME COLUMN status_new TO status")
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS processed_files (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    file_id INTEGER NOT NULL,
-                    full_content TEXT NOT NULL,
-                    FOREIGN KEY (file_id) REFERENCES files (id)
-                )
-            """)
+            # Add full_content column to existing tables if it doesn't exist
+            with suppress(sqlite3.OperationalError):
+                cursor.execute("ALTER TABLE files ADD COLUMN full_content TEXT")
+
+            # Migrate processed_files data to files table and drop the old table
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='processed_files'")
+            if cursor.fetchone():
+                # Copy data from processed_files to files
+                cursor.execute("""
+                    UPDATE files
+                    SET full_content = (
+                        SELECT pf.full_content
+                        FROM processed_files pf
+                        WHERE pf.file_id = files.id
+                    )
+                    WHERE id IN (SELECT file_id FROM processed_files)
+                """)
+                # Drop the old table
+                cursor.execute("DROP TABLE processed_files")
 
             conn.commit()
 
